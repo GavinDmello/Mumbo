@@ -30,17 +30,22 @@ func main() {
 // Each connection will have its own thread
 func listenConnection(conn net.Conn) {
 	for {
+
 		var out string
-		buffer := make([]byte,1400)
+		buffer := make([]byte,6400)
 		dataSize,err := conn.Read(buffer)
-		if err!= nil{
-			log.Fatalln("Connection closed")
+		if err != nil{
+			fmt.Println("Connection Closed")
+			return
 		}
+
 		data := buffer[:dataSize]
+		fmt.Println(len(data))    	
     	err = msgpack.Unmarshal(data, &out)
     	if err != nil {
         	panic(err)
     	}
+
 		fmt.Println("received a message",string(out))
 		_,err = conn.Write(data)
 

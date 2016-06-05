@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+    
     conn,err := net.Dial("tcp","localhost:1500")
     if err!= nil{
         log.Fatalln(err)
@@ -19,8 +20,8 @@ func main() {
     }
 
     _,err = conn.Write(message)
-    if err!= nil{
-	log.Fatalln(err)
+    if err!= nil {
+	   log.Fatalln(err)
     }
 
     fmt.Println("Message sent")
@@ -29,7 +30,7 @@ func main() {
         buffer := make([]byte,1400)
         dataSize,err := conn.Read(buffer)	
         if err!= nil{
-            log.Fatalln("Connection closed")
+            fmt.Println("Connection closed")
             return
         }
 
@@ -39,7 +40,7 @@ func main() {
             panic(err)
         }
 	    fmt.Println("received a message",string(out))
-	
+
         }
 
 }
