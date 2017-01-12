@@ -1,5 +1,6 @@
 package main
 
+// validation for all set commands
 func setValidation(data map[string]interface{}) bool {
     _, ok := data["cmd"]
 
@@ -23,6 +24,7 @@ func setValidation(data map[string]interface{}) bool {
 
 }
 
+// validation for all get commands
 func getValidation(data map[string]interface{}) bool {
     _, ok := data["cmd"]
 
