@@ -7,7 +7,7 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
-var port =  3000
+var port =  2700
 
 func main() {
     initializeStore()
@@ -31,5 +31,5 @@ func main() {
     })
 
     fmt.Println("Server started on port", port)
-    http.ListenAndServe(":3000", nil)
+    http.ListenAndServe(":2700", nil)
 }

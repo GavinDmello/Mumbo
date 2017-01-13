@@ -5,7 +5,7 @@ import (
 )
 
 func check(data map[string]interface{}) map[string]interface{} {
-    returnMap := make(map[string]interface{})
+    responseMap := make(map[string]interface{})
 
     switch data["cmd"] {
 
@@ -13,42 +13,42 @@ func check(data map[string]interface{}) map[string]interface{} {
             isValid := setValidation(data)
 
             if !isValid {
-                formValidationErrorResp(returnMap)
+                formValidationErrorResp(responseMap)
             } else {
                 key := data["key"]
                 value := data["value"]
                 result := setVal(key, value)
-                returnMap["value"] = result
-                formSuccessResponse(returnMap)
+                responseMap["value"] = result
+                formSuccessResponse(responseMap)
             }
-            return returnMap
+            return responseMap
 
         case "get" :
-            fmt.Println("get")
+        case "exist":
             isValid := getValidation(data)
 
             if !isValid {
-                formValidationErrorResp(returnMap)
+                formValidationErrorResp(responseMap)
+                return responseMap
             } else {
                 key := data["key"]
                 err, result := getVal(key)
                 if err {
-                    missingKey(returnMap)
+                    missingKey(responseMap)
                 } else {
-                    returnMap["value"] = result
-                    formSuccessResponse(returnMap)
+                    responseMap["value"] = result
+                    formSuccessResponse(responseMap)
                 }
 
             }
-            return returnMap
-
+            return responseMap
 
         default :
             fmt.Println("invalid command")
-            formValidationErrorResp(returnMap)
+            formValidationErrorResp(responseMap)
 
     }
-    return returnMap
+    return responseMap
 }
 
 // missing key packet

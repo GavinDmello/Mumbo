@@ -1,3 +1,21 @@
 # Mumbo
 
-A fast key value store written and scaled in Golang. Work in progress.
+A simple key value store written in Golang.
+
+-----------------------
+## Operations list
+
+ - Get
+ - Set
+ - Exist
+
+-----------------------
+## Benchmarks
+
+Reads per sec   -   25,873
+Writes per sec   -  26,427
+
+
+--------------------
+## License
+MIT
