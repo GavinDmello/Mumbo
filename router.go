@@ -63,6 +63,22 @@ func check(data map[string]interface{}) map[string]interface{} {
 
             return responseMap
 
+        case "batchget" :
+            // fallthrough
+            isValid := batchGetValidation(data)
+
+            if !isValid {
+                formValidationErrorResp(responseMap)
+                return responseMap
+            }
+
+            keyList := data["keylist"]
+            result := batchGet(keyList)
+            responseMap["value"] = result
+            formSuccessResponse(responseMap)
+
+            return responseMap
+
         default :
             fmt.Println("invalid command")
             formValidationErrorResp(responseMap)

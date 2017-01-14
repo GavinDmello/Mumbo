@@ -2,6 +2,12 @@ package main
 
 var data map[interface{}]interface{}
 
+type keys struct {
+    Key interface{} `json:"key"`
+    Value interface{} `json:"value"`
+    Exists bool `json:"exists"`
+}
+
 // initialize in memory store
 func initializeStore() {
     data = make(map[interface{}]interface{})
@@ -27,4 +33,31 @@ func getVal(key interface{}) (bool, interface{}){
 // deletes a value from the store
 func delVal(key interface{}) {
     delete(data, key)
+}
+
+// gets a list a values in a single call
+func batchGet(keylist interface{}) []keys {
+
+    list := keylist.([]interface{})
+    pairs := make([]keys, 0)
+
+
+    for _, key := range list {
+        value, ok := data[key]
+        if ok {
+            pairs = append(pairs, keys{
+                Key : key,
+                Value: value,
+                Exists : true,
+            })
+        } else {
+            pairs = append(pairs, keys{
+                Key : key,
+                Exists : false,
+                Value : nil,
+            })
+        }
+    }
+
+    return pairs
 }
