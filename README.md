@@ -8,6 +8,7 @@ A simple in memory key value store written in Golang.
  - Set
  - Exist
  - Delete
+ - BatchGet
 
 ## Benchmarks
 
