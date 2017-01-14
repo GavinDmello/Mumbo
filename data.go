@@ -23,3 +23,8 @@ func getVal(key interface{}) (bool, interface{}){
         return false, value
     }
 }
+
+// deletes a value from the store
+func delVal(key interface{}) {
+    delete(data, key)
+}

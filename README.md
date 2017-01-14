@@ -7,6 +7,7 @@ A simple in memory key value store written in Golang.
  - Get
  - Set
  - Exist
+ - Delete
 
 ## Benchmarks
 

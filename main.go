@@ -9,27 +9,30 @@ import (
 var upgrader = websocket.Upgrader{}
 var port =  2700
 
+// where all the magic begins
 func main() {
     initializeStore()
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         var conn, _ = upgrader.Upgrade(w, r, nil)
-        var msg interface{}
-        go func(conn *websocket.Conn) {
-            for {
-
-                err := conn.ReadJSON(&msg)
-                if err != nil {
-                    conn.Close()
-                    break
-                }
-
-                result := check(msg.(map[string]interface{}))
-                conn.WriteJSON(result)
-            }
-        }(conn)
+        go handleConnection(conn)
     })
 
     fmt.Println("Server started on port", port)
     http.ListenAndServe(":2700", nil)
+}
+
+// handles the client connections
+func handleConnection(conn *websocket.Conn) {
+    var msg interface{}
+    for {
+        err := conn.ReadJSON(&msg)
+        if err != nil {
+            conn.Close()
+            break
+        }
+
+        result := check(msg.(map[string]interface{}))
+        conn.WriteJSON(result)
+    }
 }

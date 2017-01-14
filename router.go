@@ -4,6 +4,7 @@ import (
     "fmt"
 )
 
+// check command
 func check(data map[string]interface{}) map[string]interface{} {
     responseMap := make(map[string]interface{})
 
@@ -14,41 +15,60 @@ func check(data map[string]interface{}) map[string]interface{} {
 
             if !isValid {
                 formValidationErrorResp(responseMap)
-            } else {
-                key := data["key"]
-                value := data["value"]
-                result := setVal(key, value)
-                responseMap["value"] = result
-                formSuccessResponse(responseMap)
+                return responseMap
             }
+
+            key := data["key"]
+            value := data["value"]
+            result := setVal(key, value)
+            responseMap["value"] = result
+            formSuccessResponse(responseMap)
+
             return responseMap
 
-        case "get" :
         case "exist":
+            fallthrough
+
+        case "get" :
             isValid := getValidation(data)
 
             if !isValid {
                 formValidationErrorResp(responseMap)
                 return responseMap
-            } else {
-                key := data["key"]
-                err, result := getVal(key)
-                if err {
-                    missingKey(responseMap)
-                } else {
-                    responseMap["value"] = result
-                    formSuccessResponse(responseMap)
-                }
-
             }
+
+            key := data["key"]
+            err, result := getVal(key)
+
+            if err {
+                missingKey(responseMap)
+            } else {
+                responseMap["value"] = result
+                formSuccessResponse(responseMap)
+            }
+
+            return responseMap
+
+        case "del" :
+            isValid := getValidation(data)
+
+            if !isValid {
+                formValidationErrorResp(responseMap)
+                return responseMap
+            }
+
+            key := data["key"]
+            delVal(key)
+            formSuccessResponse(responseMap)
+
             return responseMap
 
         default :
             fmt.Println("invalid command")
             formValidationErrorResp(responseMap)
-
+            return responseMap
     }
-    return responseMap
+
 }
 
 // missing key packet
