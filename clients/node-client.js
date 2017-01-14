@@ -1,5 +1,9 @@
 var WebSocket = require('ws');
-var ws = new WebSocket('ws://localhost:3000/');
+var ws = new WebSocket('ws://localhost:2700');
+
+ws.on('error', function(error) {
+    console.log('error', error)
+})
 
 ws.on('open', function open() {
     ws.send(JSON.stringify({
@@ -9,8 +13,24 @@ ws.on('open', function open() {
     }));
 
     ws.send(JSON.stringify({
-        cmd: 'get',
-        key: 'hello'
+        cmd: 'set',
+        key: 'list',
+        value: [1, 2, 3]
+    }));
+
+    ws.send(JSON.stringify({
+        cmd: 'del',
+        key: 'list'
+    }));
+
+    ws.send(JSON.stringify({
+        cmd: 'exist',
+        key: 'list'
+    }));
+
+    ws.send(JSON.stringify({
+        cmd: 'batchget',
+        keylist: ['hello', 'list']
     }));
 });
 
