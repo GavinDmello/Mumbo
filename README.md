@@ -9,6 +9,7 @@ A simple in memory key value store written in Golang.
  - Exist
  - Delete
  - BatchGet
+ - ListPush
 
 ## Benchmarks
 
