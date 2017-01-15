@@ -79,6 +79,27 @@ func check(data map[string]interface{}) map[string]interface{} {
 
             return responseMap
 
+        case "listpush" :
+            isValid := listPushValidation(data)
+
+            if !isValid {
+                formValidationErrorResp(responseMap)
+                return responseMap
+            }
+
+            item := data["item"]
+            key  := data["key"]
+            err, result := listPush(key, item)
+
+            if err {
+                listError(responseMap, result)
+                return responseMap
+            }
+
+            responseMap["value"] = result
+            formSuccessResponse(responseMap)
+            return responseMap
+
         default :
             fmt.Println("invalid command")
             formValidationErrorResp(responseMap)
@@ -104,4 +125,10 @@ func formSuccessResponse(success map[string]interface{}) {
 func formValidationErrorResp(errorResponse map[string]interface{}) {
     errorResponse["status"] = 404
     errorResponse["message"] = "validation error"
+}
+
+// returns list errors
+func listError(errorResponse map[string]interface{}, message interface{}) {
+    errorResponse["status"] = 402
+    errorResponse["message"] = message
 }

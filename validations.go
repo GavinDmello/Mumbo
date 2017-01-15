@@ -39,3 +39,21 @@ func batchGetValidation(data map[string]interface{}) bool {
     return true
 }
 
+
+// validation for all batchGet commands
+func listPushValidation(data map[string]interface{}) bool {
+    _, ok := data["key"]
+
+    if !ok {
+        return false
+    }
+
+    _, ok = data["item"]
+
+    if !ok {
+        return false
+    }
+
+    return true
+}
+

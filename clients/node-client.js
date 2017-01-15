@@ -20,12 +20,18 @@ ws.on('open', function open() {
 
     ws.send(JSON.stringify({
         cmd: 'del',
-        key: 'list'
+        key: 'hello'
     }));
 
     ws.send(JSON.stringify({
         cmd: 'exist',
-        key: 'list'
+        key: 'hello'
+    }));
+
+    ws.send(JSON.stringify({
+        cmd: 'listpush',
+        key: 'list',
+        item: 'newitem'
     }));
 
     ws.send(JSON.stringify({

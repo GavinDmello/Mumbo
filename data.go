@@ -35,6 +35,22 @@ func delVal(key interface{}) {
     delete(data, key)
 }
 
+// will append an item to the list
+func listPush(key interface{}, item interface{}) (bool, interface{}) {
+    res, ok := data[key]
+
+    if (!ok) {
+        return true, "Item not found"
+    }
+
+    if value, ok := res.([]interface{}); ok {
+        value = append(value, item)
+        return false, value
+    } else {
+        return true, "Item is not of type list"
+    }
+}
+
 // gets a list a values in a single call
 func batchGet(keylist interface{}) []keys {
 
