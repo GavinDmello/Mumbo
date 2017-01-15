@@ -1,5 +1,10 @@
 package main
 
+import (
+    "sync"
+)
+
+var mutex = &sync.Mutex{}
 var data map[interface{}]interface{}
 
 type keys struct {
@@ -44,7 +49,9 @@ func listPush(key interface{}, item interface{}) (bool, interface{}) {
     }
 
     if value, ok := res.([]interface{}); ok {
+        mutex.Lock()
         value = append(value, item)
+        mutex.Unlock()
         return false, value
     } else {
         return true, "Item is not of type list"
