@@ -80,7 +80,7 @@ func check(data map[string]interface{}) map[string]interface{} {
             return responseMap
 
         case "listpush" :
-            isValid := listPushValidation(data)
+            isValid := listOpValidation(data)
 
             if !isValid {
                 formValidationErrorResp(responseMap)
@@ -98,6 +98,30 @@ func check(data map[string]interface{}) map[string]interface{} {
 
             responseMap["value"] = result
             formSuccessResponse(responseMap)
+
+            return responseMap
+
+        case "listremove" :
+            isValid := listOpValidation(data)
+
+            if !isValid {
+                formValidationErrorResp(responseMap)
+                return responseMap
+            }
+
+            item := data["item"]
+            key  := data["key"]
+
+            err, result := listRemove(key, item)
+
+            if err {
+                listError(responseMap, result)
+                return responseMap
+            }
+
+            responseMap["value"] = result
+            formSuccessResponse(responseMap)
+
             return responseMap
 
         default :

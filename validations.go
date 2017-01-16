@@ -41,7 +41,7 @@ func batchGetValidation(data map[string]interface{}) bool {
 
 
 // validation for all batchGet commands
-func listPushValidation(data map[string]interface{}) bool {
+func listOpValidation(data map[string]interface{}) bool {
     _, ok := data["key"]
 
     if !ok {
@@ -56,4 +56,5 @@ func listPushValidation(data map[string]interface{}) bool {
 
     return true
 }
+
 

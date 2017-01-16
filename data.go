@@ -44,18 +44,52 @@ func delVal(key interface{}) {
 func listPush(key interface{}, item interface{}) (bool, interface{}) {
     res, ok := data[key]
 
-    if (!ok) {
+    if !ok {
         return true, "Item not found"
     }
 
     if value, ok := res.([]interface{}); ok {
         mutex.Lock()
         value = append(value, item)
+        data[key] = value
         mutex.Unlock()
         return false, value
     } else {
         return true, "Item is not of type list"
     }
+}
+
+// will remove an item from the list by value
+func listRemove(key interface{}, item interface{}) (bool, interface{}) {
+    index := -1
+    res, ok := data[key]
+
+    if !ok {
+        return true, "Item not found"
+    }
+
+    if value, ok := res.([]interface{}); ok {
+
+        mutex.Lock()
+        for k, val := range value {
+            if (val == item) {
+                index = k
+                break
+            }
+        }
+
+        if index >= 0 {
+            value = append(value[:index], value[index+1:]...)
+            data[key] = value
+        }
+
+        mutex.Unlock()
+
+        return false, value
+    } else {
+        return true, "Item is not of type list"
+    }
+
 }
 
 // gets a list a values in a single call
