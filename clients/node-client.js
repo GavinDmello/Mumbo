@@ -35,6 +35,18 @@ ws.on('open', function open() {
     }));
 
     ws.send(JSON.stringify({
+        cmd: 'get',
+        key: 'list',
+        item: 'newitem'
+    }));
+
+    ws.send(JSON.stringify({
+        cmd: 'listremove',
+        key: 'list',
+        item: 'newitem'
+    }));
+
+    ws.send(JSON.stringify({
         cmd: 'batchget',
         keylist: ['hello', 'list']
     }));
