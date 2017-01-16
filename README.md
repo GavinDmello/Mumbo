@@ -10,6 +10,7 @@ A simple in memory key value store written in Golang.
  - Delete
  - BatchGet
  - ListPush
+ - ListRemove
 
 ## Benchmarks
 
