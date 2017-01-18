@@ -1,5 +1,11 @@
+/*
+ * Mumbo - A fast  in-memory key value store
+ * Copyright(c) 2016-present @GavinDmello
+ * BSD Licensed
+ */
+
 var WebSocket = require('ws');
-var ws = new WebSocket('ws://localhost:2700/');
+var ws = new WebSocket('ws://172.16.37.92:2700/');
 var recs = 0
 var st, et
 var done = false
