@@ -61,3 +61,7 @@ ws.on('open', function open() {
 ws.on('message', function(data, flags) {
     console.log(data)
 });
+
+ws.on('close', function close() {
+  console.log('disconnected');
+});
