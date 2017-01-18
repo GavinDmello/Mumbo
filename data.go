@@ -102,7 +102,7 @@ func listRemove(key interface{}, item interface{}) (bool, interface{}) {
 func batchGet(keylist interface{}) []keys {
 
     list := keylist.([]interface{})
-    pairs := make([]keys, 0)
+    pairs := make([]keys, 0) // array & void values
 
 
     for _, key := range list {
