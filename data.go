@@ -8,6 +8,7 @@ package main
 
 import (
     "sync"
+    "time"
 )
 
 var mutex = &sync.Mutex{}
@@ -19,14 +20,24 @@ type keys struct {
     Exists bool `json:"exists"`
 }
 
+type values struct {
+    Value interface{} `json:"value"`
+    Locked bool `json:"locked"`
+    Ttl  interface{}  `json:"ttl"`
+}
+
 // initialize in memory store
 func initializeStore() {
     data = make(map[interface{}]interface{})
 }
 
 // set value for specified key
-func setVal(key interface{}, value interface{}) interface{} {
-    data[key] = value
+func setVal(key interface{}, value interface{}, ttl interface{}) interface{} {
+    data[key] = values{
+        Value : value,
+        Locked : false,
+        Ttl : ttl,
+    }
     return data[key]
 }
 
@@ -54,10 +65,13 @@ func listPush(key interface{}, item interface{}) (bool, interface{}) {
         return true, "Item not found"
     }
 
-    if value, ok := res.([]interface{}); ok {
+    castResult, _ := res.(values)
+
+    if value, ok := castResult.Value.([]interface{}); ok {
         mutex.Lock()
         value = append(value, item)
-        data[key] = value
+        castResult.Value = value
+        data[key] =  castResult
         mutex.Unlock()
         return false, value
     } else {
@@ -74,7 +88,9 @@ func listRemove(key interface{}, item interface{}) (bool, interface{}) {
         return true, "Item not found"
     }
 
-    if value, ok := res.([]interface{}); ok {
+    castResult, _ := res.(values)
+
+    if value, ok := castResult.Value.([]interface{}); ok {
 
         mutex.Lock()
         for k, val := range value {
@@ -86,7 +102,8 @@ func listRemove(key interface{}, item interface{}) (bool, interface{}) {
 
         if index >= 0 {
             value = append(value[:index], value[index+1:]...)
-            data[key] = value
+            castResult.Value = value
+            data[key] = castResult
         }
 
         mutex.Unlock()
@@ -106,21 +123,26 @@ func batchGet(keylist interface{}) []keys {
 
 
     for _, key := range list {
-        value, ok := data[key]
+        res, ok := data[key]
         if ok {
+            castResult, _ := res.(values)
             pairs = append(pairs, keys{
                 Key : key,
-                Value: value,
+                Value: castResult.Value,
                 Exists : true,
             })
         } else {
             pairs = append(pairs, keys{
                 Key : key,
                 Exists : false,
-                Value : nil,
             })
         }
     }
 
     return pairs
+}
+
+// returns the timestamp in milliseconds
+func returnTimestamp() int64 {
+    return time.Now().UnixNano() / int64(time.Millisecond)
 }

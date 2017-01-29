@@ -56,6 +56,15 @@ ws.on('open', function open() {
         cmd: 'batchget',
         keylist: ['hello', 'list']
     }));
+
+    ws.send(JSON.stringify({
+        cmd: 'set',
+        key: 'map',
+        value: {
+            a: 'a',
+            b: 'b'
+        }
+    }));
 });
 
 ws.on('message', function(data, flags) {
@@ -63,5 +72,5 @@ ws.on('message', function(data, flags) {
 });
 
 ws.on('close', function close() {
-  console.log('disconnected');
+    console.log('disconnected');
 });

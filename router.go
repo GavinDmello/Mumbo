@@ -13,6 +13,7 @@ import (
 // check command
 func check(data map[string]interface{}) map[string]interface{} {
     responseMap := make(map[string]interface{})
+    responseMap["cmd"] = data["cmd"]
 
     switch data["cmd"] {
 
@@ -26,7 +27,8 @@ func check(data map[string]interface{}) map[string]interface{} {
 
             key := data["key"]
             value := data["value"]
-            result := setVal(key, value)
+            ttl := data["ttl"]
+            result := setVal(key, value, ttl)
             responseMap["value"] = result
             formSuccessResponse(responseMap)
 
@@ -70,7 +72,6 @@ func check(data map[string]interface{}) map[string]interface{} {
             return responseMap
 
         case "batchget" :
-            // fallthrough
             isValid := batchGetValidation(data)
 
             if !isValid {
