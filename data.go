@@ -14,12 +14,14 @@ import (
 var mutex = &sync.Mutex{}
 var data map[interface{}]interface{}
 
+// structure for batch keys
 type keys struct {
     Key interface{} `json:"key"`
     Value interface{} `json:"value"`
     Exists bool `json:"exists"`
 }
 
+// structure for values
 type values struct {
     Value interface{} `json:"value"`
     Locked bool `json:"locked"`
@@ -33,10 +35,19 @@ func initializeStore() {
 
 // set value for specified key
 func setVal(key interface{}, value interface{}, ttl interface{}) interface{} {
+    var castTtl, newTtlValue int64
+
+    if ttl != nil {
+        castTtl = int64(ttl.(float64))
+        newTtlValue = returnTimestamp() + castTtl
+    } else {
+        newTtlValue = -1 // infinite ttl
+    }
+
     data[key] = values{
         Value : value,
         Locked : false,
-        Ttl : ttl,
+        Ttl : newTtlValue,
     }
     return data[key]
 }
@@ -145,4 +156,24 @@ func batchGet(keylist interface{}) []keys {
 // returns the timestamp in milliseconds
 func returnTimestamp() int64 {
     return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+// check for dead keys and delete
+func collectionGarbageCycle() {
+
+    // todo, make this configurable
+    for _ = range time.Tick(20*time.Millisecond) {
+
+        for k, v := range data {
+            value := v.(values)
+            ttl := value.Ttl.(int64)
+            if ttl > -1 {
+
+                currentTimestamp := returnTimestamp()
+                if currentTimestamp > ttl {
+                    delete(data, k)
+                }
+            }
+        }
+    }
 }
