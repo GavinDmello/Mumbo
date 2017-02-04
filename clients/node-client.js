@@ -42,8 +42,7 @@ ws.on('open', function open() {
 
     ws.send(JSON.stringify({
         cmd: 'get',
-        key: 'list',
-        item: 'newitem'
+        key: 'list'
     }));
 
     ws.send(JSON.stringify({
@@ -65,6 +64,22 @@ ws.on('open', function open() {
             b: 'b'
         }
     }));
+
+    ws.send(JSON.stringify({
+        cmd: 'set',
+        key: 'ttl',
+        value: 'delete key',
+        ttl: 100
+    }));
+
+    setTimeout(function() {
+        ws.send(JSON.stringify({
+            cmd: 'get',
+            key: 'ttl'
+        }));
+    }, 2000)
+
+
 });
 
 ws.on('message', function(data, flags) {

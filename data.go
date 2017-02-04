@@ -9,6 +9,7 @@ package main
 import (
     "sync"
     "time"
+    "math/rand"
 )
 
 var mutex = &sync.Mutex{}
@@ -34,8 +35,9 @@ func initializeStore() {
 }
 
 // set value for specified key
-func setVal(key interface{}, value interface{}, ttl interface{}) interface{} {
+func setVal(key, value interface{}, ttl interface{}) interface{} {
     var castTtl, newTtlValue int64
+
 
     if ttl != nil {
         castTtl = int64(ttl.(float64))
@@ -49,18 +51,28 @@ func setVal(key interface{}, value interface{}, ttl interface{}) interface{} {
         Locked : false,
         Ttl : newTtlValue,
     }
+
     return data[key]
 }
 
 // get value for a specfied key
 func getVal(key interface{}) (bool, interface{}){
-    value, ok := data[key]
+
+    v, ok := data[key]
 
     if !ok {
         return true, nil
-    } else {
-        return false, value
     }
+
+    value := v.(values)
+    // expired := deleteIfExpired(key, value)
+
+    // if expired {
+    //     return expired, nil
+    // }
+
+    return false, value
+
 }
 
 // deletes a value from the store
@@ -69,14 +81,20 @@ func delVal(key interface{}) {
 }
 
 // will append an item to the list
-func listPush(key interface{}, item interface{}) (bool, interface{}) {
+func listPush(key, item interface{}) (bool, interface{}) {
     res, ok := data[key]
+
 
     if !ok {
         return true, "Item not found"
     }
 
     castResult, _ := res.(values)
+    expired := deleteIfExpired(key, castResult)
+
+    if expired {
+        return true, "Item not found"
+    }
 
     if value, ok := castResult.Value.([]interface{}); ok {
         mutex.Lock()
@@ -91,15 +109,21 @@ func listPush(key interface{}, item interface{}) (bool, interface{}) {
 }
 
 // will remove an item from the list by value
-func listRemove(key interface{}, item interface{}) (bool, interface{}) {
+func listRemove(key, item interface{}) (bool, interface{}) {
     index := -1
     res, ok := data[key]
+
 
     if !ok {
         return true, "Item not found"
     }
 
     castResult, _ := res.(values)
+    expired := deleteIfExpired(key, castResult)
+
+    if expired {
+        return true, "Item not found"
+    }
 
     if value, ok := castResult.Value.([]interface{}); ok {
 
@@ -137,11 +161,22 @@ func batchGet(keylist interface{}) []keys {
         res, ok := data[key]
         if ok {
             castResult, _ := res.(values)
-            pairs = append(pairs, keys{
-                Key : key,
-                Value: castResult.Value,
-                Exists : true,
-            })
+            // lazy deletion of keys
+            expired := deleteIfExpired(key, castResult)
+
+            if  !expired {
+                pairs = append(pairs, keys{
+                    Key : key,
+                    Value: castResult.Value,
+                    Exists : true,
+                })
+            } else {
+                pairs = append(pairs, keys{
+                    Key : key,
+                    Exists : false,
+                })
+            }
+
         } else {
             pairs = append(pairs, keys{
                 Key : key,
@@ -158,22 +193,48 @@ func returnTimestamp() int64 {
     return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
+// checks if the key has expired
+func deleteIfExpired(key interface{}, value values) bool {
+
+    ttl := value.Ttl.(int64)
+    currentTimestamp := returnTimestamp()
+
+    if ttl > -1 && currentTimestamp > ttl {
+        delVal(key)
+        return true
+    }
+
+    return false
+}
+
+// get random keys
+func random(min, max int) int {
+    rand.Seed(time.Now().Unix())
+    return rand.Intn(max - min) + min
+}
+
 // check for dead keys and delete
 func collectionGarbageCycle() {
 
     // todo, make this configurable
+    randomIndex := 0
+    currentIndex := 0
     for _ = range time.Tick(20*time.Millisecond) {
+        if len(data) == 0 {
+            continue
+        }
+        randomIndex = random(1, len(data))
 
+        currentIndex = 0
+
+        //mutex.RLock()
         for k, v := range data {
-            value := v.(values)
-            ttl := value.Ttl.(int64)
-            if ttl > -1 {
-
-                currentTimestamp := returnTimestamp()
-                if currentTimestamp > ttl {
-                    delete(data, k)
-                }
+            currentIndex++
+           if currentIndex % randomIndex == 0 {
+                value := v.(values)
+                deleteIfExpired(k, value)
             }
         }
+        //mutex.RUnlock()
     }
 }
