@@ -22,4 +22,4 @@ might slow you down.
  -  Writes per sec = 26,427
 
 ## License
-MIT
+BSD
