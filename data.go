@@ -12,7 +12,7 @@ import (
     "math/rand"
 )
 
-var mutex = &sync.Mutex{}
+var mutex = &sync.RWMutex{}
 var data map[interface{}]interface{}
 
 // structure for batch keys
@@ -46,17 +46,22 @@ func setVal(key, value interface{}, ttl interface{}) interface{} {
         newTtlValue = -1 // infinite ttl
     }
 
+    mutex.Lock()
     data[key] = values{
         Value : value,
         Locked : false,
         Ttl : newTtlValue,
     }
+    mutex.Unlock()
 
     return data[key]
 }
 
 // get value for a specfied key
 func getVal(key interface{}) (bool, interface{}){
+
+    mutex.RLock()
+    defer mutex.RUnlock()
 
     v, ok := data[key]
 
@@ -65,19 +70,23 @@ func getVal(key interface{}) (bool, interface{}){
     }
 
     value := v.(values)
-    // expired := deleteIfExpired(key, value)
+    expired := deleteIfExpired(key, value)
 
-    // if expired {
-    //     return expired, nil
-    // }
+    if expired {
+        //mutex.RUnlock()
+        return expired, nil
+    }
 
+    //mutex.RUnlock()
     return false, value
 
 }
 
 // deletes a value from the store
 func delVal(key interface{}) {
+    mutex.Lock()
     delete(data, key)
+    mutex.Unlock()
 }
 
 // will append an item to the list
@@ -158,7 +167,10 @@ func batchGet(keylist interface{}) []keys {
 
 
     for _, key := range list {
+        mutex.RLock()
         res, ok := data[key]
+        mutex.RUnlock()
+
         if ok {
             castResult, _ := res.(values)
             // lazy deletion of keys
