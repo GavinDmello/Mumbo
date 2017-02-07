@@ -230,6 +230,7 @@ func random(min, max int) int {
     return rand.Intn(max - min) + min
 }
 
+// delete keys from TTL lists
 func deleteTTLKeys(key string) {
     mutex.RLock()
     index := -1
@@ -251,10 +252,11 @@ func deleteTTLKeys(key string) {
 // check for dead keys and delete
 func collectionGarbageCycle() {
 
-    // todo, make this configurable
+
     randomIndex := 0
-    key := " "
-    for _ = range time.Tick(30*time.Millisecond) {
+    key := ""
+    // todo, make this configurable
+    for _ = range time.Tick(500*time.Millisecond) {
         if totalKeys > 0 {
             randomIndex = random(0, totalKeys)
 
