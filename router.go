@@ -25,7 +25,7 @@ func check(data map[string]interface{}) map[string]interface{} {
                 return responseMap
             }
 
-            key := data["key"]
+            key := data["key"].(string)
             value := data["value"]
             ttl := data["ttl"]
             result := setVal(key, value, ttl)
@@ -45,7 +45,7 @@ func check(data map[string]interface{}) map[string]interface{} {
                 return responseMap
             }
 
-            key := data["key"]
+            key := data["key"].(string)
             err, result := getVal(key)
 
             if err {
@@ -65,7 +65,7 @@ func check(data map[string]interface{}) map[string]interface{} {
                 return responseMap
             }
 
-            key := data["key"]
+            key := data["key"].(string)
             delVal(key)
             formSuccessResponse(responseMap)
 
@@ -95,7 +95,7 @@ func check(data map[string]interface{}) map[string]interface{} {
             }
 
             item := data["item"]
-            key  := data["key"]
+            key  := data["key"].(string)
             err, result := listPush(key, item)
 
             if err {
@@ -117,7 +117,7 @@ func check(data map[string]interface{}) map[string]interface{} {
             }
 
             item := data["item"]
-            key  := data["key"]
+            key  := data["key"].(string)
 
             err, result := listRemove(key, item)
 

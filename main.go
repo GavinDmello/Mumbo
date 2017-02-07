@@ -22,7 +22,7 @@ func main() {
     initializeStore()
 
     // intialize random garbage collection
-    //go collectionGarbageCycle()
+    go collectionGarbageCycle()
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         var conn, _ = upgrader.Upgrade(w, r, nil)

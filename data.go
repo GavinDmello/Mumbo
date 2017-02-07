@@ -13,11 +13,13 @@ import (
 )
 
 var mutex = &sync.RWMutex{}
-var data map[interface{}]interface{}
+var data map[string]interface{}
+var totalKeys int
+var ttlKeys []string
 
 // structure for batch keys
 type keys struct {
-    Key interface{} `json:"key"`
+    Key string `json:"key"`
     Value interface{} `json:"value"`
     Exists bool `json:"exists"`
 }
@@ -31,17 +33,21 @@ type values struct {
 
 // initialize in memory store
 func initializeStore() {
-    data = make(map[interface{}]interface{})
+    data = make(map[string]interface{})
+    totalKeys = 0
+    ttlKeys = make([]string, 0)
 }
 
 // set value for specified key
-func setVal(key, value interface{}, ttl interface{}) interface{} {
+func setVal(key string, value interface{}, ttl interface{}) interface{} {
     var castTtl, newTtlValue int64
 
 
     if ttl != nil {
         castTtl = int64(ttl.(float64))
         newTtlValue = returnTimestamp() + castTtl
+        ttlKeys = append(ttlKeys, key)
+        totalKeys++
     } else {
         newTtlValue = -1 // infinite ttl
     }
@@ -58,7 +64,7 @@ func setVal(key, value interface{}, ttl interface{}) interface{} {
 }
 
 // get value for a specfied key
-func getVal(key interface{}) (bool, interface{}){
+func getVal(key string) (bool, interface{}){
 
     mutex.RLock()
     v, ok := data[key]
@@ -80,14 +86,15 @@ func getVal(key interface{}) (bool, interface{}){
 }
 
 // deletes a value from the store
-func delVal(key interface{}) {
+func delVal(key string) {
     mutex.Lock()
     delete(data, key)
+    go deleteTTLKeys(key)
     mutex.Unlock()
 }
 
 // will append an item to the list
-func listPush(key, item interface{}) (bool, interface{}) {
+func listPush(key string, item interface{}) (bool, interface{}) {
     res, ok := data[key]
 
 
@@ -115,7 +122,7 @@ func listPush(key, item interface{}) (bool, interface{}) {
 }
 
 // will remove an item from the list by value
-func listRemove(key, item interface{}) (bool, interface{}) {
+func listRemove(key string, item interface{}) (bool, interface{}) {
     index := -1
     res, ok := data[key]
 
@@ -161,34 +168,35 @@ func batchGet(keylist interface{}) []keys {
 
     list := keylist.([]interface{})
     pairs := make([]keys, 0) // array & void values
-
+    var stringKey string
 
     for _, key := range list {
         mutex.RLock()
-        res, ok := data[key]
+        stringKey = key.(string)
+        res, ok := data[stringKey]
         mutex.RUnlock()
 
         if ok {
             castResult, _ := res.(values)
             // lazy deletion of keys
-            expired := deleteIfExpired(key, castResult)
+            expired := deleteIfExpired(stringKey, castResult)
 
             if  !expired {
                 pairs = append(pairs, keys{
-                    Key : key,
+                    Key : stringKey,
                     Value: castResult.Value,
                     Exists : true,
                 })
             } else {
                 pairs = append(pairs, keys{
-                    Key : key,
+                    Key : stringKey,
                     Exists : false,
                 })
             }
 
         } else {
             pairs = append(pairs, keys{
-                Key : key,
+                Key : stringKey,
                 Exists : false,
             })
         }
@@ -203,7 +211,7 @@ func returnTimestamp() int64 {
 }
 
 // checks if the key has expired
-func deleteIfExpired(key interface{}, value values) bool {
+func deleteIfExpired(key string, value values) bool {
 
     ttl := value.Ttl.(int64)
     currentTimestamp := returnTimestamp()
@@ -222,28 +230,44 @@ func random(min, max int) int {
     return rand.Intn(max - min) + min
 }
 
+func deleteTTLKeys(key string) {
+    mutex.RLock()
+    index := -1
+    for k, val := range ttlKeys {
+        if (val == key) {
+            index = k
+            break
+        }
+    }
+
+    if index >= 0 {
+        ttlKeys = append(ttlKeys[:index], ttlKeys[index+1:]...)
+        totalKeys--
+    }
+
+    mutex.RUnlock()
+}
+
 // check for dead keys and delete
 func collectionGarbageCycle() {
 
     // todo, make this configurable
     randomIndex := 0
-    currentIndex := 0
-    for _ = range time.Tick(20*time.Millisecond) {
-        if len(data) == 0 {
-            continue
-        }
-        randomIndex = random(1, len(data))
+    key := " "
+    for _ = range time.Tick(30*time.Millisecond) {
+        if totalKeys > 0 {
+            randomIndex = random(0, totalKeys)
 
-        currentIndex = 0
+            if randomIndex < totalKeys {
+                mutex.RLock()
+                key = ttlKeys[randomIndex]
+                value := data[key].(values)
+                deleteIfExpired(key, value)
+                mutex.RUnlock()
 
-        //mutex.RLock()
-        for k, v := range data {
-            currentIndex++
-           if currentIndex % randomIndex == 0 {
-                value := v.(values)
-                deleteIfExpired(k, value)
+                deleteTTLKeys(key)
             }
+
         }
-        //mutex.RUnlock()
     }
 }
