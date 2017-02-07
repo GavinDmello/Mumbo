@@ -61,9 +61,8 @@ func setVal(key, value interface{}, ttl interface{}) interface{} {
 func getVal(key interface{}) (bool, interface{}){
 
     mutex.RLock()
-    defer mutex.RUnlock()
-
     v, ok := data[key]
+    mutex.RUnlock()
 
     if !ok {
         return true, nil
@@ -73,11 +72,9 @@ func getVal(key interface{}) (bool, interface{}){
     expired := deleteIfExpired(key, value)
 
     if expired {
-        //mutex.RUnlock()
         return expired, nil
     }
 
-    //mutex.RUnlock()
     return false, value
 
 }
