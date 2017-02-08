@@ -251,25 +251,25 @@ func deleteTTLKeys(key string) {
 
 // check for dead keys and delete
 func collectionGarbageCycle() {
-
-
     randomIndex := 0
     key := ""
+    var value values
     // todo, make this configurable
-    for _ = range time.Tick(500*time.Millisecond) {
+    for _ = range time.Tick(100*time.Millisecond) {
         if totalKeys > 0 {
             randomIndex = random(0, totalKeys)
 
             if randomIndex < totalKeys {
                 mutex.RLock()
                 key = ttlKeys[randomIndex]
-                value := data[key].(values)
-                deleteIfExpired(key, value)
+                v, ok := data[key]
                 mutex.RUnlock()
 
-                deleteTTLKeys(key)
+                if ok {
+                    value = v.(values)
+                    deleteIfExpired(key, value)
+                }
             }
-
         }
     }
 }
