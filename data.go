@@ -36,6 +36,7 @@ func initializeStore() {
     data = make(map[string]interface{})
     totalKeys = 0
     ttlKeys = make([]string, 0)
+    iterate()
 }
 
 // set value for specified key
@@ -59,6 +60,12 @@ func setVal(key string, value interface{}, ttl interface{}) interface{} {
         Ttl : newTtlValue,
     }
     mutex.Unlock()
+
+    diskPut(key, values{
+        Value : value,
+        Locked : false,
+        Ttl : newTtlValue,
+    })
 
     return data[key]
 }
@@ -91,6 +98,9 @@ func delVal(key string) {
     delete(data, key)
     go deleteTTLKeys(key)
     mutex.Unlock()
+
+    // delete from disk
+    diskDel(key)
 }
 
 // will append an item to the list
@@ -213,7 +223,13 @@ func returnTimestamp() int64 {
 // checks if the key has expired
 func deleteIfExpired(key string, value values) bool {
 
-    ttl := value.Ttl.(int64)
+    ttl, ok := value.Ttl.(int64)
+
+    if !ok {
+        floatTtl , _ := value.Ttl.(float64)
+        ttl = int64(floatTtl)
+    }
+
     currentTimestamp := returnTimestamp()
 
     if ttl > -1 && currentTimestamp > ttl {

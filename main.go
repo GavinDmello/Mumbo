@@ -18,6 +18,9 @@ var port =  2700
 // where all the magic begins
 func main() {
 
+    // initialize disk storage
+     initializeDiskStorage()
+
     // initialize the basic structure, load the persistence values etc
     initializeStore()
 
