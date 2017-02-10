@@ -62,7 +62,7 @@ func diskPut(key string, value interface{}) {
 
 //delete from batch
 func diskDel(key string) {
-    batch.Delete([]byte("baz"))
+    batch.Delete([]byte(key))
     written = false
 }
 
