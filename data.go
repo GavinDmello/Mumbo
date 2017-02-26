@@ -270,8 +270,8 @@ func collectionGarbageCycle() {
     randomIndex := 0
     key := ""
     var value values
-    // todo, make this configurable
-    for _ = range time.Tick(100*time.Millisecond) {
+
+    for _ = range time.Tick(gcInterval*time.Millisecond) {
         if totalKeys > 0 {
             randomIndex = random(0, totalKeys)
 

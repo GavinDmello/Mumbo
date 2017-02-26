@@ -13,19 +13,12 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
-var port =  2700
 
 // where all the magic begins
 func main() {
 
-    // initialize disk storage
-     initializeDiskStorage()
-
-    // initialize the basic structure, load the persistence values etc
-    initializeStore()
-
-    // intialize random garbage collection
-    go collectionGarbageCycle()
+    // read the config
+    readConfig()
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         var conn, _ = upgrader.Upgrade(w, r, nil)
@@ -33,7 +26,7 @@ func main() {
     })
 
     fmt.Println("Server started on port", port)
-    http.ListenAndServe(":2700", nil)
+    http.ListenAndServe(port, nil)
 }
 
 // handles the client connections

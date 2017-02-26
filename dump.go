@@ -33,9 +33,17 @@ func flush() {
 
 // will load the data from the disk on start up
 func iterate() {
+
+    if !persistence {
+        fmt.Println("Sever started without persistence")
+        fmt.Println("we're ready to go!")
+        return
+    }
+
     fmt.Println("Server is loading your data")
     fmt.Println("Please be patient")
     iter := disk.NewIterator(nil, nil)
+
     for iter.Next() {
         k := iter.Key()
         v := iter.Value()
@@ -53,6 +61,12 @@ func iterate() {
 
 // puts data on the batch
 func diskPut(key string, value interface{}) {
+
+    // If persistence is set to false, don't take the pain
+    if !persistence {
+        return
+    }
+
     err, bytes := GetBytes(value)
     if !err {
         batch.Put([]byte(key), bytes)
@@ -62,6 +76,11 @@ func diskPut(key string, value interface{}) {
 
 //delete from batch
 func diskDel(key string) {
+    // If persistence is set to false, don't take the pain
+    if !persistence {
+        return
+    }
+
     batch.Delete([]byte(key))
     written = false
 }
@@ -99,7 +118,7 @@ func decodeBytes(value []byte) (bool, values) {
 
 // will flush to disk every 5 minutes(configurable value)
 func flushingActivity() {
-    for _ = range time.Tick(300000*time.Millisecond) {
+    for _ = range time.Tick(diskWriteInterval*time.Millisecond) {
         flush()
         written = true
     }

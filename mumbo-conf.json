@@ -1,0 +1,7 @@
+{
+    "gcInterval" : 100,
+    "persistence" : true,
+    "diskWriteInterval" : 300000,
+    "port" : 2700
+
+}
