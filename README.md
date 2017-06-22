@@ -1,6 +1,6 @@
 # Mumbo
 
-A simple in key value store written in Golang.
+A simple key value store written in Golang.
 
 ## Download
 You can check out the latest releases and download the binary.
