@@ -43,8 +43,8 @@ Example config in `/etc/mumbo-conf.json`
 This was done on a box with 8 GB RAM and i5 processor
 This benchmark was done on the same box without persistence. If done on different boxes the network might slow you down.
 
- -  Reads per sec =  25,873
- -  Writes per sec = 26,427
+ -  Reads per sec =  48,971
+ -  Writes per sec = 44,483
 
 ## License
 BSD
