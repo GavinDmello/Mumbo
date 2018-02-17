@@ -12,7 +12,7 @@ var done = false
 
 ws.on('open', function open() {
     console.log('Starting test...')
-    startGetTest()
+    startSetTest()
 });
 
 ws.on('message', function(data, flags) {
@@ -23,7 +23,7 @@ ws.on('message', function(data, flags) {
         console.log(100000 / ((et - st) / 1000), 'recs per sec')
         if (!done) {
             done = true
-            setTimeout(startSetTest, 1000)
+            setTimeout(startGetTest, 1000)
         }
     }
 });
